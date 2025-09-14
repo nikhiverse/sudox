@@ -12,8 +12,13 @@
       <h3 id="defaultDate">Today's date: <span id="todayDate"></span></h3>
 
       <h1 id="puzzleHeading" class="hidden">Sudoku Puzzle</h1>
-      <h3 id="puzzleIdLine" class="hidden">
-        ID: <span id="puzzleIdText"></span>
+      <h3
+        id="puzzleIdLine"
+        class="hidden"
+        style="display: flex; justify-content: space-between"
+      >
+        <span>🆔 <span id="puzzleIdText"></span></span>
+        <span>❤️ <span id="livesCount"></span></span>
       </h3>
 
       <div class="top-controls" id="topControls">
@@ -38,7 +43,9 @@
             </div>
           </div>
         </div>
-        <button id="downloadBtn">Download</button>
+        <button id="downloadBtn">
+          <img src="img/downicon.png" alt="Download" />
+        </button>
       </div>
     </div>
 

@@ -2,7 +2,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const randomBtn = document.getElementById("randomBtn");
   const gridSizeSelect = document.getElementById("gridSize");
   const gridContainer = document.getElementById("gridContainer");
-  const messageEl = document.getElementById("message");
   const downloadBtn = document.getElementById("downloadBtn");
 
   // Define symbols and block dimensions
@@ -37,6 +36,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentGrid = [];
   let currentSize = parseInt(gridSizeSelect.value);
+  let solvedGrid = null; // always holds the current puzzle's full solution
+  let lives = 0; // lives remaining
 
   randomBtn.addEventListener("click", function () {
     currentSize = parseInt(gridSizeSelect.value);
@@ -69,6 +70,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Show puzzle ID in heading
     document.getElementById("puzzleIdText").textContent = hexId;
+
+    //Show lives in heading
+    if (puzzleName == "Nona") lives = 3;
+    else if (puzzleName == "Doza") lives = 4;
+    else if (puzzleName == "Hexa") lives = 5;
+
+    document.getElementById("livesCount").textContent = lives;
+
     document.getElementById("puzzleIdLine").classList.remove("hidden");
 
     // Generate grid
@@ -243,6 +252,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (fillRemaining(grid, 0, dims.rows, dims.cols, size, seed)) {
         if (validateGrid(grid, size)) {
+          // Store a deep copy before returning
+          solvedGrid = grid.map((row) => [...row]);
+
           return grid;
         }
       }
@@ -403,20 +415,37 @@ document.addEventListener("DOMContentLoaded", function () {
           // Validate input
           input.addEventListener("input", (e) => {
             let val = e.target.value.toUpperCase();
+
+            //Invalid input → clear
             if (!validSymbols.includes(val)) {
               e.target.value = "";
-            } else {
-              e.target.value = val;
+              return;
             }
+
+            e.target.value = val;
+
+            // Correct input
+            if (solvedGrid && solvedGrid[row][col] === val) {
+              e.target.style.color = "#1d4ed8"; // correct
+              e.target.readOnly = true; // lock cell
+            } else {
+              // Wrong input
+              e.target.style.color = "red";
+
+              lives--;
+              document.getElementById("livesCount").textContent = lives;
+
+              if (lives === 0) lockPuzzle(size);
+            }
+
+            // Always check win after any move
+            checkWin(size);
           });
 
           // FIX: Updated keydown listener to properly skip obstacles
           input.addEventListener("keydown", (e) => {
             const currentRow = parseInt(e.target.dataset.row);
             const currentCol = parseInt(e.target.dataset.col);
-
-            let nextRow = currentRow;
-            let nextCol = currentCol;
 
             const totalCells = size * size;
             let currentIndex = currentRow * size + currentCol;
@@ -705,7 +734,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yy = String(d.getFullYear()).slice(-2);
     return `#${
-      format === "nona" ? 9 : format === "doza" ? 12 : 16
+      format === "nona" ? "09" : format === "doza" ? 12 : 16
     }${dd}${mm}${yy}`.toLowerCase();
   }
 
@@ -716,6 +745,83 @@ document.addEventListener("DOMContentLoaded", function () {
       t = Math.imul(t ^ (t >>> 15), t | 1);
       t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // check Win
+  function checkWin(size) {
+    const inputs = document.querySelectorAll(".input-cell");
+    for (let inp of inputs) {
+      const r = parseInt(inp.dataset.row);
+      const c = parseInt(inp.dataset.col);
+      if (inp.value !== solvedGrid[r][c]) {
+        return; // still incomplete
+      }
+    }
+
+    //All matched → show popup
+    showWinPopup(size);
+  }
+
+  //check Lose
+  function lockPuzzle(size) {
+    const inputs = document.querySelectorAll(".input-cell");
+    inputs.forEach((inp) => (inp.readOnly = true));
+
+    showLosePopup(size);
+  }
+
+  function showWinPopup(size) {
+    const overlay = document.createElement("div");
+    overlay.className = "popup"; // same class
+
+    const popup = document.createElement("div");
+    popup.className = "popup-box"; // same class
+
+    popup.innerHTML = `
+    <h2>🎉Congratulations!🎊</h2>
+    <p>You solved the ${size}x${size} Sudoku puzzle! Keep it up.</p>
+    <div class="popup-buttons">
+      <button id="mainMenuBtn">Main Menu</button>
+      <button id="thanksBtn">Stay</button>
+    </div>
+  `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    document.getElementById("mainMenuBtn").onclick = () => {
+      window.location.href = "index.html"; // go back to menu
+    };
+    document.getElementById("thanksBtn").onclick = () => {
+      document.body.removeChild(overlay); // close popup
+    };
+  }
+
+  function showLosePopup(size) {
+    const overlay = document.createElement("div");
+    overlay.className = "popup"; // same class
+
+    const popup = document.createElement("div");
+    popup.className = "popup-box"; // same class
+
+    popup.innerHTML = `
+    <h2>Game Over!😢</h2>
+    <p>You lost all lives for ${size}x${size} Sudoku. Better try next time.</p>
+    <div class="popup-buttons">
+      <button id="mainMenuBtn">Main Menu</button>
+      <button id="thanksBtn">Stay</button>
+    </div>
+  `;
+
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+
+    document.getElementById("mainMenuBtn").onclick = () => {
+      window.location.href = "index.html"; // go back to menu
+    };
+    document.getElementById("thanksBtn").onclick = () => {
+      document.body.removeChild(overlay); // close popup
     };
   }
 });
