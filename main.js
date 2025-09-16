@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Define symbols and block dimensions
   const symbols = {
+    6: ["1", "2", "3", "4", "5", "6"],
     9: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
     12: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C"],
     16: [
@@ -29,6 +30,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   const blockDims = {
+    6: { rows: 2, cols: 3 },
     9: { rows: 3, cols: 3 },
     12: { rows: 3, cols: 4 },
     16: { rows: 4, cols: 4 },
@@ -44,6 +46,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Get format name and ID
     const format = {
+      6: "mini",
       9: "nona",
       12: "doza",
       16: "hexa",
@@ -58,6 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Update and show puzzle heading
     const puzzleName = {
+      6: "Mini",
       9: "Nona",
       12: "Doza",
       16: "Hexa",
@@ -72,7 +76,8 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("puzzleIdText").textContent = hexId;
 
     //Show lives in heading
-    if (puzzleName == "Nona") lives = 3;
+    if (puzzleName == "Mini") lives = 1;
+    else if (puzzleName == "Nona") lives = 3;
     else if (puzzleName == "Doza") lives = 4;
     else if (puzzleName == "Hexa") lives = 5;
 
@@ -86,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (currentSize === 12 || currentSize === 16) {
       currentGrid = createSymmetricPuzzle(solution, currentSize, seed);
     } else {
-      // FIX: Pass the seed to the function for 9x9
+      // FIX: Pass the seed to the function for 9x9 and 6x6
       currentGrid = createPuzzleFromGrid(solution, currentSize, seed);
     }
 
@@ -120,11 +125,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const size = currentSize;
 
     // Determine format and hex ID
-    const formatMap = { 9: "nona", 12: "doza", 16: "hexa" };
+    const formatMap = { 6: "mini", 9: "nona", 12: "doza", 16: "hexa" };
     const format = formatMap[size];
     const hexId = getFormatHexId(format);
 
-    const titleMap = { 9: "Nona", 12: "Doza", 16: "Hexa" };
+    const titleMap = { 6: "Mini", 9: "Nona", 12: "Doza", 16: "Hexa" };
     const n1 = titleMap[size];
 
     const cellSize = 10; // mm
@@ -533,8 +538,8 @@ document.addEventListener("DOMContentLoaded", function () {
       .map(() => Array(size).fill(""));
     const block = blockDims[size];
 
-    const maxCluesPerUnit = 5;
-    const totalClueLimit = 36;
+    const maxCluesPerUnit = size === 6 ? 3 : 5;
+    const totalClueLimit = size === 6 ? 14 : 36;
 
     const rowClues = Array(size).fill(0);
     const colClues = Array(size).fill(0);
@@ -734,7 +739,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const mm = String(d.getMonth() + 1).padStart(2, "0");
     const yy = String(d.getFullYear()).slice(-2);
     return `#${
-      format === "nona" ? "09" : format === "doza" ? 12 : 16
+      format === "mini"
+        ? "06"
+        : format === "nona"
+        ? "09"
+        : format === "doza"
+        ? 12
+        : 16
     }${dd}${mm}${yy}`.toLowerCase();
   }
 
