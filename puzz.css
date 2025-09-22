@@ -58,11 +58,12 @@ select {
   font-weight: bold;
 }
 
-#downloadBtn {
-  width: 50px;
-  height: 50px;
+#downloadBtn,
+#backBtn {
+  width: 34px;
+  height: 34px;
   padding: 0;
-  background-color: #ec4899;
+  background-color: #e4e4e4;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -73,31 +74,11 @@ select {
 }
 
 #downloadBtn:hover {
-  background-color: #db2777;
-}
-
-#downloadBtn img {
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
-}
-
-#backBtn {
-  width: 70px;
-  height: 50px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #2563eb;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+  background-color: #888888;
 }
 
 #backBtn:hover {
-  background-color: #1d4ed8;
-  font-weight: bold;
+  background-color: #888888;
 }
 
 h1,
@@ -164,22 +145,11 @@ h3 {
   background-color: #ffdfde;
 }
 
-.light-blue:hover,
-.light-blue:focus {
-  background-color: #d4eef7;
-}
-
-.white:hover,
-.white:focus {
-  background-color: #fff9f9;
-}
-
-.grid-cell:has(.input-cell:focus).light-blue {
-  background-color: #d4eef7;
-}
-
+.light-blue:focus,
+.white:focus,
+.grid-cell:has(.input-cell:focus).light-blue,
 .grid-cell:has(.input-cell:focus).white {
-  background-color: #fff9f9;
+  background-color: #a8dcab;
 }
 
 .popup {

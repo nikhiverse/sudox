@@ -5,28 +5,30 @@ document.addEventListener("DOMContentLoaded", function () {
   const downloadBtn = document.getElementById("downloadBtn");
 
   // Define symbols and block dimensions
+  const allSymbols = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+  ];
+
   const symbols = {
-    6: ["1", "2", "3", "4", "5", "6"],
-    9: ["1", "2", "3", "4", "5", "6", "7", "8", "9"],
-    12: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C"],
-    16: [
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "A",
-      "B",
-      "C",
-      "D",
-      "E",
-      "F",
-      "G",
-    ],
+    6: allSymbols.slice(0, 6),
+    9: allSymbols.slice(0, 9),
+    12: allSymbols.slice(0, 12),
+    16: allSymbols.slice(0, 16),
   };
 
   const blockDims = {
@@ -67,9 +69,11 @@ document.addEventListener("DOMContentLoaded", function () {
       16: "Hexa",
     }[currentSize];
 
-    document.getElementById(
-      "puzzleHeading"
-    ).textContent = `Sudoku ${puzzleName} Puzzle`;
+    document.getElementById("puzzleHeading").innerHTML = `<img
+          src="img/sudcon.png"
+          alt="Logo"
+          style="height: 50px; vertical-align: middle; margin-right: 8px"
+        />Sudoku ${puzzleName} Puzzle`;
     document.getElementById("puzzleHeading").classList.remove("hidden");
 
     // Show puzzle ID in heading

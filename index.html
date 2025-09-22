@@ -4,11 +4,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sudoku Puzzle</title>
+    <link rel="icon" type="image/png" href="img/sudcon.png" />
     <link rel="stylesheet" href="puzz.css" />
   </head>
   <body>
     <div class="container">
-      <h1 id="defaultHeading">Sudoku Puzzle</h1>
+      <h1 id="defaultHeading">
+        <img
+          src="img/sudcon.png"
+          alt="Logo"
+          style="height: 50px; vertical-align: middle; margin-right: 8px"
+        />
+        Sudoku Puzzle
+      </h1>
       <h3 id="defaultDate">Today's date: <span id="todayDate"></span></h3>
 
       <h1 id="puzzleHeading" class="hidden">Sudoku Puzzle</h1>
@@ -17,8 +25,10 @@
         class="hidden"
         style="display: flex; justify-content: space-between"
       >
-        <span>🆔 <span id="puzzleIdText"></span></span>
-        <span>❤️ <span id="livesCount"></span></span>
+        <span><b>ID:</b> <span id="puzzleIdText"></span></span>
+        <span title="Lives"
+          >❤️ <span id="livesCount" title="Lives"></span
+        ></span>
       </h3>
 
       <div class="top-controls" id="topControls">
@@ -34,18 +44,18 @@
       <div id="gridContainer" class="hidden"></div>
 
       <div class="bottom-controls hidden" id="bottomControls">
-        <button id="backBtn">Back</button>
+        <button id="backBtn" title="Back" style="font-size: 28px">⬅️</button>
         <div id="confirmPopup" class="popup hidden">
           <div class="popup-box">
-            <p>Are You Sure you want to go back?</p>
+            <p>Are You Sure you wanna go back to <b>main menu?</b></p>
             <div class="popup-buttons">
               <button id="confirmYes">Yes</button>
               <button id="confirmNo">No</button>
             </div>
           </div>
         </div>
-        <button id="downloadBtn">
-          <img src="img/downicon.png" alt="Download" />
+        <button id="downloadBtn" title="Download" style="font-size: 28px">
+          ⬇️
         </button>
       </div>
     </div>
