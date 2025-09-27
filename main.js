@@ -40,8 +40,56 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let currentGrid = [];
   let currentSize = parseInt(gridSizeSelect.value);
-  let solvedGrid = null; // always holds the current puzzle's full solution
-  let lives = 0; // lives remaining
+  let solvedGrid = null;
+  let lives = 0;
+  window.currentHexId = null; // global tracker for active puzzle
+
+  // ---------- Persistence helpers ----------
+  function saveGameState(hexId, currentGrid, solvedGrid, lives) {
+    const state = {
+      puzzle: currentGrid,
+      solution: solvedGrid,
+      lives: lives,
+      inGame: true,
+    };
+    localStorage.setItem("sudoku_" + hexId, JSON.stringify(state));
+  }
+  function loadGameState(hexId) {
+    const data = localStorage.getItem("sudoku_" + hexId);
+    return data ? JSON.parse(data) : null;
+  }
+  function clearGameState(hexId) {
+    localStorage.removeItem("sudoku_" + hexId);
+  }
+  // ---------- end persistence helpers ----------
+
+  // Auto-continue saved game on page load
+  (function tryAutoContinue() {
+    const size = parseInt(gridSizeSelect.value);
+    const formatMap = { 6: "mini", 9: "nona", 12: "doza", 16: "hexa" };
+    const format = formatMap[size];
+    const hexId = getFormatHexId(format);
+    const saved = loadGameState(hexId);
+    if (saved && saved.inGame) {
+      window.currentHexId = hexId;
+      currentSize = size;
+      currentGrid = saved.puzzle;
+      solvedGrid = saved.solution;
+      lives = saved.lives;
+
+      document.getElementById("defaultHeading").classList.add("hidden");
+      document.getElementById("defaultDate").classList.add("hidden");
+      document.getElementById("topControls").classList.add("hidden");
+      document.getElementById("puzzleHeading").classList.remove("hidden");
+      document.getElementById("puzzleIdText").textContent = hexId;
+      document.getElementById("puzzleIdLine").classList.remove("hidden");
+      document.getElementById("bottomControls").classList.remove("hidden");
+      document.getElementById("gridContainer").classList.remove("hidden");
+      document.getElementById("livesCount").textContent = lives;
+
+      renderGrid(currentGrid, currentSize);
+    }
+  })();
 
   randomBtn.addEventListener("click", function () {
     currentSize = parseInt(gridSizeSelect.value);
@@ -56,6 +104,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const hexId = getFormatHexId(format);
     const seed = parseInt(hexId.slice(1, -2), 16);
+    window.currentHexId = hexId;
+
+    const savedState = loadGameState(hexId);
 
     // Hide default headings
     document.getElementById("defaultHeading").classList.add("hidden");
@@ -85,19 +136,26 @@ document.addEventListener("DOMContentLoaded", function () {
     else if (puzzleName == "Doza") lives = 4;
     else if (puzzleName == "Hexa") lives = 5;
 
+    if (savedState) {
+      currentGrid = savedState.puzzle;
+      solvedGrid = savedState.solution;
+      lives = savedState.lives;
+    } else {
+      const solution = generateValidGrid(currentSize, seed);
+      solvedGrid = solution.map((r) => [...r]);
+
+      if (currentSize === 12 || currentSize === 16) {
+        currentGrid = createSymmetricPuzzle(solution, currentSize, seed);
+      } else {
+        currentGrid = createPuzzleFromGrid(solution, currentSize, seed);
+      }
+
+      saveGameState(hexId, currentGrid, solvedGrid, lives);
+    }
+
     document.getElementById("livesCount").textContent = lives;
 
     document.getElementById("puzzleIdLine").classList.remove("hidden");
-
-    // Generate grid
-    const solution = generateValidGrid(currentSize, seed);
-
-    if (currentSize === 12 || currentSize === 16) {
-      currentGrid = createSymmetricPuzzle(solution, currentSize, seed);
-    } else {
-      // FIX: Pass the seed to the function for 9x9 and 6x6
-      currentGrid = createPuzzleFromGrid(solution, currentSize, seed);
-    }
 
     renderGrid(currentGrid, currentSize);
 
@@ -213,6 +271,13 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   confirmYes.addEventListener("click", () => {
+    // Save progress before going back
+    if (window.currentHexId) {
+      saveGameState(window.currentHexId, currentGrid, solvedGrid, lives);
+    }
+    window.currentHexId = null; // prevent instant auto-resume
+    savedState = null; // make sure your code doesn't instantly reload state
+
     // Proceed with back logic
     document.getElementById("topControls").classList.remove("hidden");
 
@@ -229,6 +294,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   confirmNo.addEventListener("click", () => {
+    saveGameState(window.currentHexId, currentGrid, solvedGrid, lives);
     // Just close popup
     confirmPopup.classList.add("hidden");
   });
@@ -408,50 +474,96 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const value = grid[row][col];
 
-        if (value !== "") {
+        if (value !== "" && solvedGrid[row][col] === value) {
+          // Case 1: Clue or correctly solved entry → show fixed
           const span = document.createElement("span");
           span.textContent = value;
           span.classList.add("fixed");
           cell.appendChild(span);
         } else {
+          // Case 2 & 3: User input or empty
           const input = document.createElement("input");
-          input.setAttribute("type", "text");
-          input.setAttribute("maxlength", "1");
+          input.type = "text";
+          input.maxLength = 1;
           input.classList.add("input-cell");
           input.dataset.row = row;
           input.dataset.col = col;
 
-          // Validate input
+          if (value !== "") {
+            input.value = value;
+            if (value === solvedGrid[row][col]) {
+              input.style.color = "#1d4ed8"; // correct
+              input.readOnly = true;
+            } else {
+              input.style.color = "red"; // wrong entry
+            }
+          }
+
+          // Input validation + saving
           input.addEventListener("input", (e) => {
             let val = e.target.value.toUpperCase();
 
-            //Invalid input → clear
-            if (!validSymbols.includes(val)) {
+            // This prevents further life deduction or grid interaction
+            if (lives <= 0) {
+              e.target.value = currentGrid[row][col] || ""; // Revert to last saved value
+              return;
+            }
+
+            // 1. Clean up and reset styles
+            e.target.classList.remove("correct-input");
+            e.target.style.color = ""; // Reset inline color (removes the red)
+
+            // 2. Validate symbol and clear if invalid
+            const isValidSymbol = validSymbols.includes(val);
+            if (!isValidSymbol && val !== "") {
               e.target.value = "";
+              currentGrid[row][col] = "";
+              saveGameState(
+                window.currentHexId,
+                currentGrid,
+                solvedGrid,
+                lives
+              );
               return;
             }
 
             e.target.value = val;
+            currentGrid[row][col] = val; // Update progress grid
 
-            // Correct input
-            if (solvedGrid && solvedGrid[row][col] === val) {
-              e.target.style.color = "#1d4ed8"; // correct
-              e.target.readOnly = true; // lock cell
+            // 3. Check for correctness and apply final styling/actions
+            if (val === "") {
+              // Input is empty, do nothing further
+            } else if (solvedGrid && solvedGrid[row][col] == val) {
+              // Correct Entry: Lock cell and style
+              e.target.classList.add("correct-input"); // Applies the blue style from CSS
+              e.target.readOnly = true;
+              currentGrid[row][col] = val; // Ensure the correct value is saved
             } else {
-              // Wrong input
+              // Incorrect Entry: Apply red color and deduct life
               e.target.style.color = "red";
-
               lives--;
               document.getElementById("livesCount").textContent = lives;
 
-              if (lives === 0) lockPuzzle(size);
+              if (lives === 0) {
+                currentGrid[row][col] = val;
+                lockPuzzle(size);
+                // Note: The puzzle lock will happen here, no need to set color here as well
+              }
             }
 
-            // Always check win after any move
+            // 4. Save game state and check for win
+            if (window.currentHexId)
+              saveGameState(
+                window.currentHexId,
+                currentGrid,
+                solvedGrid,
+                lives
+              );
+
             checkWin(size);
           });
 
-          // FIX: Updated keydown listener to properly skip obstacles
+          // Arrow navigation stays the same
           input.addEventListener("keydown", (e) => {
             const currentRow = parseInt(e.target.dataset.row);
             const currentCol = parseInt(e.target.dataset.col);
@@ -462,23 +574,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
             switch (e.key) {
               case "ArrowUp":
-                // Move backward in the linear index
                 nextIndex = (currentIndex - size + totalCells) % totalCells;
                 break;
               case "ArrowDown":
-                // Move forward in the linear index
                 nextIndex = (currentIndex + size) % totalCells;
                 break;
               case "ArrowLeft":
-                // Move backward, handle wrap-around for row end to beginning
                 nextIndex = (currentIndex - 1 + totalCells) % totalCells;
                 break;
               case "ArrowRight":
-                // Move forward, handle wrap-around for row beginning to end
                 nextIndex = (currentIndex + 1) % totalCells;
                 break;
               default:
-                return; // Exit if not an arrow key
+                return;
             }
 
             let searchCount = 0;
@@ -495,7 +603,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
               }
 
-              // Move to the next cell to check, based on key direction
               switch (e.key) {
                 case "ArrowUp":
                   nextIndex = (nextIndex - size + totalCells) % totalCells;
@@ -510,7 +617,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   nextIndex = (nextIndex + 1) % totalCells;
                   break;
               }
-
               searchCount++;
             }
           });
@@ -613,6 +719,11 @@ document.addEventListener("DOMContentLoaded", function () {
           }
         }
       }
+    }
+
+    // Uniqueness check
+    if (!hasUniqueSolution(puzzle, size)) {
+      return createPuzzleFromGrid(grid, size, seed + 1);
     }
 
     return puzzle;
@@ -748,9 +859,46 @@ document.addEventListener("DOMContentLoaded", function () {
         : format === "nona"
         ? "09"
         : format === "doza"
-        ? 12
-        : 16
+        ? "12"
+        : "16"
     }${dd}${mm}${yy}`.toLowerCase();
+  }
+
+  // Backtracking solver that also counts solutions
+  function solveSudoku(grid, size, block, limit = 2) {
+    let solutions = 0;
+
+    function helper(r, c) {
+      if (r === size) {
+        solutions++;
+        return solutions < limit;
+      }
+      const nextR = c === size - 1 ? r + 1 : r;
+      const nextC = c === size - 1 ? 0 : c + 1;
+
+      if (grid[r][c] !== "") {
+        return helper(nextR, nextC);
+      }
+
+      for (const sym of symbols[size]) {
+        if (isValidPlacement(grid, r, c, sym, block.rows, block.cols, size)) {
+          grid[r][c] = sym;
+          if (!helper(nextR, nextC)) return false;
+          grid[r][c] = "";
+        }
+      }
+      return true;
+    }
+
+    helper(0, 0);
+    return solutions;
+  }
+
+  // Check if puzzle has exactly one solution
+  function hasUniqueSolution(puzzle, size) {
+    const block = blockDims[size];
+    const copy = puzzle.map((row) => [...row]);
+    return solveSudoku(copy, size, block) === 1;
   }
 
   // Linear congruential generator for creating a pseudorandom number stream
@@ -781,7 +929,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //check Lose
   function lockPuzzle(size) {
     const inputs = document.querySelectorAll(".input-cell");
-    inputs.forEach((inp) => (inp.readOnly = true));
+    inputs.forEach((inp) => (inp.disabled = true));
 
     showLosePopup(size);
   }

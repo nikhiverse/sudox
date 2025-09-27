@@ -3,7 +3,7 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
   display: flex;
-  justify-content: top;
+  justify-content: flex-start; /* FIX: top is invalid */
   align-items: center;
   min-height: 100vh;
   margin: 0;
@@ -13,7 +13,6 @@ body {
 }
 
 .container {
-  text-align: top;
   background-color: white;
   padding: 30px;
   border-radius: 8px;
@@ -135,6 +134,15 @@ h3 {
 .fixed {
   font-weight: bold;
   color: #000;
+}
+
+.correct-input {
+  color: #1d4ed8;
+  font-weight: bold;
+}
+
+.incorrect-input {
+  color: red;
 }
 
 .light-blue {
