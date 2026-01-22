@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -32,13 +32,26 @@
       </h3>
 
       <div class="top-controls" id="topControls">
-        <select id="gridSize">
-          <option value="6">6x6 (Mini)</option>
-          <option value="9" selected>9x9 (Nona)</option>
-          <option value="12">12x12 (Doza)</option>
-          <option value="16">16x16 (Hexa)</option>
-        </select>
-        <button id="randomBtn">Today's Puzzle</button>
+        <div class="difficulty-grid">
+          <button class="diff-btn" data-size="6" data-difficulty="0">
+            6x6 (Mini)
+          </button>
+          <button class="diff-btn" data-size="9" data-difficulty="1">
+            9x9 Easy
+          </button>
+          <button class="diff-btn" data-size="9" data-difficulty="2">
+            9x9 Hard
+          </button>
+          <button class="diff-btn" data-size="9" data-difficulty="3">
+            9x9 Expert
+          </button>
+          <button class="diff-btn" data-size="12" data-difficulty="0">
+            12x12 (Doza)
+          </button>
+          <button class="diff-btn" data-size="16" data-difficulty="0">
+            16x16 (Hexa)
+          </button>
+        </div>
       </div>
 
       <div id="gridContainer" class="hidden"></div>
@@ -60,7 +73,6 @@
       </div>
     </div>
 
-    <!-- LinkedIn Footer -->
     <div>
       <footer>
         <p>
