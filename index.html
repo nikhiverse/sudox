@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SudoX — Sudoku Puzzle Variants</title>
+    <link rel="icon" type="image/png" href="img/sudcon.png" />
+    <link rel="stylesheet" href="puzz.css" />
+  </head>
+
+  <body>
+    <!-- ── TOP BAR ── -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <div class="topbar-logo">SX</div>
+        <span class="topbar-name">SudoX</span>
+      </div>
+      <span class="topbar-date" id="todayDate"></span>
+    </header>
+
+    <!-- ── MAIN ── -->
+    <main class="container">
+      <!-- Menu State -->
+      <div id="menuState">
+        <div class="menu-header">
+          <p class="menu-eyebrow">Daily Puzzles</p>
+          <h1 class="menu-title">Sudoku Variants</h1>
+          <p class="menu-sub">Choose a variant and play</p>
+        </div>
+        <div class="top-controls" id="topControls">
+          <div class="difficulty-grid">
+            <button class="diff-btn" data-game="sudoku_mini">
+              Sudoku Mini
+            </button>
+            <button class="diff-btn" data-game="sudoku_easy">
+              Sudoku Eazy
+            </button>
+            <button class="diff-btn" data-game="sudoku9">Sudoku 9</button>
+            <button class="diff-btn" data-game="sudoku_a">Sudoku A</button>
+            <button class="diff-btn" data-game="sudokuX">Sudoku X</button>
+            <button class="diff-btn" data-game="windoku">Windoku</button>
+            <button class="diff-btn" data-game="windokuX">Windoku X</button>
+            <button class="diff-btn" data-game="jigsaw8">Jigsaw 8</button>
+            <button class="diff-btn" data-game="jigsaw9">Jigsaw 9</button>
+            <button class="diff-btn" data-game="jigsawX">Jigsaw X</button>
+            <button class="diff-btn" data-game="windoku_jigsaw">
+              Windoku Jigsaw
+            </button>
+            <button class="diff-btn" data-game="sudoku12">Sudoku 12</button>
+            <button class="diff-btn" data-game="dozaku">Dozaku</button>
+            <button class="diff-btn" data-game="twodoku_mini">
+              Twodoku Mini
+            </button>
+            <button class="diff-btn" data-game="twodoku8">Twodoku 8</button>
+            <button class="diff-btn" data-game="twodoku9">Twodoku 9</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Puzzle State -->
+      <div id="puzzleView" class="hidden">
+        <div class="puzzle-header">
+          <div class="puzzle-nav">
+            <button class="nav-back" id="puzzleBackBtn">
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M10 12L6 8l4-4" />
+              </svg>
+              All Variants
+            </button>
+            <div class="puzzle-timer" id="puzzleTimer">
+              <span class="timer-icon">🕐</span>
+              <span class="timer-display" id="timerDisplay">0:00</span>
+            </div>
+          </div>
+          <h2 id="puzzleTitle"></h2>
+          <p id="puzzleId"></p>
+        </div>
+
+        <!-- Grid -->
+        <div id="puzzleOutput">
+          <div class="loading-spinner hidden" id="spinner"></div>
+          <div id="puzzleGrid"></div>
+        </div>
+
+        <!-- Number input panel — populated by JS -->
+        <div class="num-panel" id="numPanel"></div>
+
+        <!-- Actions -->
+        <div class="puzzle-actions">
+          <button class="action-btn ghost" id="puzzleBackBtn2">Back</button>
+          <button class="action-btn primary" id="puzzleDownloadBtn">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M8 2v9M4 7l4 4 4-4" />
+              <path d="M2 13h12" />
+            </svg>
+            Download PDF
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>
+        created by
+        <a
+          href="https://www.linkedin.com/in/rathodnk"
+          target="_blank"
+          rel="noopener noreferrer"
+          >rathodnk</a
+        >
+      </p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="main.js"></script>
+    <script src="downloadPDF.js"></script>
+  </body>
+</html>
