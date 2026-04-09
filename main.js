@@ -684,7 +684,9 @@ async function generatePuzzle(game) {
   spinner.classList.remove("hidden");
   menuState.classList.add("hidden");
   puzzleView.classList.remove("hidden");
-  startTimer();
+  stopTimer();
+  timerSeconds = 0;
+  updateTimerDisplay();
 
   try {
     const res = await fetch(`/api/puzzle/${game}`);
@@ -695,6 +697,7 @@ async function generatePuzzle(game) {
     } else {
       if (data.uniqueId) puzzleIdEl.textContent = `#${data.uniqueId}`;
       renderPuzzle(data);
+      startTimer(); // Timer starts only after puzzle is rendered
     }
   } catch {
     puzzleGrid.innerHTML = `<p style="color:var(--primary);font-family:'DM Sans',sans-serif">Failed to connect — is the server running?</p>`;
