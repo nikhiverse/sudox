@@ -298,26 +298,7 @@ async function generatePuzzlePDF() {
 }
 
 // ───────────────────────────────────────────────────────────────
-//  Button wiring
+//  Download is triggered via the hamburger menu in main.js
+//  which calls generatePuzzlePDF() directly.
 // ───────────────────────────────────────────────────────────────
-document.getElementById("puzzleDownloadBtn").addEventListener("click", async () => {
-  const btn = document.getElementById("puzzleDownloadBtn");
-  btn.disabled = true;
-  btn.textContent = "Generating…";
 
-  try {
-    await generatePuzzlePDF();
-  } catch (err) {
-    console.error("PDF error:", err);
-    alert("Could not generate PDF. Please try again.");
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML =
-      `<svg width="14" height="14" viewBox="0 0 16 16" fill="none"
-        stroke="currentColor" stroke-width="2.2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <path d="M8 2v9M4 7l4 4 4-4"/>
-        <path d="M2 13h12"/>
-      </svg> Download PDF`;
-  }
-});

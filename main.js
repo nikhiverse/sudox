@@ -719,7 +719,128 @@ document
     btn.addEventListener("click", () => generatePuzzle(btn.dataset.game)),
   );
 document.getElementById("puzzleBackBtn").addEventListener("click", showMenu);
-document.getElementById("puzzleBackBtn2").addEventListener("click", showMenu);
+
+// ══════════════════════════════════════════════════════
+// HAMBURGER MENU
+// ══════════════════════════════════════════════════════
+const hamburgerBtn = document.getElementById("hamburgerBtn");
+const menuOverlay = document.getElementById("menuOverlay");
+const menuDrawer = document.getElementById("menuDrawer");
+const drawerCloseBtn = document.getElementById("drawerCloseBtn");
+const drawerList = document.getElementById("drawerList");
+
+// SVG icon helpers
+const icons = {
+  about: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>`,
+  theme: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`,
+  login: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>`,
+  guide: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>`,
+  download: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M6 11l6 6 6-6"/><path d="M3 18h18"/></svg>`,
+};
+
+function isGameActive() {
+  return !puzzleView.classList.contains("hidden");
+}
+
+function populateDrawer() {
+  drawerList.innerHTML = "";
+  const items = isGameActive()
+    ? [
+        { label: "Guide to Play", icon: icons.guide, action: "guide" },
+        { label: "Theme", icon: icons.theme, action: "theme" },
+        { label: "Download PDF", icon: icons.download, action: "download" },
+        { divider: true },
+        { label: "Login", icon: icons.login, action: "login" },
+      ]
+    : [
+        { label: "About", icon: icons.about, action: "about" },
+        { label: "Theme", icon: icons.theme, action: "theme" },
+        { divider: true },
+        { label: "Login", icon: icons.login, action: "login" },
+      ];
+
+  items.forEach((item) => {
+    if (item.divider) {
+      const div = document.createElement("li");
+      div.className = "drawer-divider";
+      drawerList.appendChild(div);
+      return;
+    }
+    const li = document.createElement("li");
+    const btn = document.createElement("button");
+    btn.className = "drawer-item";
+    btn.innerHTML = item.icon + item.label;
+    btn.addEventListener("click", () => {
+      closeDrawer();
+      handleMenuAction(item.action);
+    });
+    li.appendChild(btn);
+    drawerList.appendChild(li);
+  });
+}
+
+function openDrawer() {
+  populateDrawer();
+  menuOverlay.classList.remove("hidden");
+  menuDrawer.classList.remove("hidden");
+  // Trigger reflow for animation
+  requestAnimationFrame(() => {
+    menuOverlay.classList.add("visible");
+    menuDrawer.classList.add("visible");
+    hamburgerBtn.classList.add("open");
+  });
+}
+
+function closeDrawer() {
+  menuOverlay.classList.remove("visible");
+  menuDrawer.classList.remove("visible");
+  hamburgerBtn.classList.remove("open");
+  setTimeout(() => {
+    menuOverlay.classList.add("hidden");
+    menuDrawer.classList.add("hidden");
+  }, 300);
+}
+
+function handleMenuAction(action) {
+  switch (action) {
+    case "about":
+      alert("SudoX — Daily Sudoku Variant Puzzles\n\nCreated by rathodnk");
+      break;
+    case "theme":
+      document.documentElement.classList.toggle("force-dark");
+      document.documentElement.classList.toggle("force-light");
+      break;
+    case "guide":
+      alert(
+        "How to Play:\n\n" +
+          "1. Click a cell to select it\n" +
+          "2. Use the number buttons or keyboard to fill in values\n" +
+          "3. Green = correct, Red = wrong\n" +
+          "4. Use the eraser (or Backspace) to clear a cell\n" +
+          "5. Arrow keys navigate between cells\n" +
+          "6. Complete all cells correctly to solve the puzzle!"
+      );
+      break;
+    case "download":
+      if (typeof generatePuzzlePDF === "function") {
+        generatePuzzlePDF();
+      }
+      break;
+    case "login":
+      alert("Login feature coming soon!");
+      break;
+  }
+}
+
+hamburgerBtn.addEventListener("click", () => {
+  if (menuDrawer.classList.contains("visible")) {
+    closeDrawer();
+  } else {
+    openDrawer();
+  }
+});
+menuOverlay.addEventListener("click", closeDrawer);
+drawerCloseBtn.addEventListener("click", closeDrawer);
 
 // ── Responsive resize: re-render grid on viewport/orientation change ──
 let resizeTimeout = null;
